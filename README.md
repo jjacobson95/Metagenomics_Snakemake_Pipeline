@@ -7,6 +7,7 @@ Development of pipeline in progress.
 Completed steps:  
  1) deinterleave with BBmap  
  2) fastp  
+
   
 Current step in progress:   
  3) MetaSPAdes assembly  
