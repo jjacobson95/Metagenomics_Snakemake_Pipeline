@@ -7,7 +7,7 @@ Completed steps:
 1) deinterleave with BBmap 
 2) fastp  
   
-Current step in progress: 
+Current step in progress:   
 3) Metaspades assembly  
 
 Next steps:  
