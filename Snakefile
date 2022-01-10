@@ -1,5 +1,4 @@
 
-
 SAMPLES = ["ChrtobMetaP3_0mM_FD", "ChrtobMetaP5_0mM_FD", "ChrtobMetaP5_4mM_FD"]
 
 
@@ -66,3 +65,4 @@ rule fastp:
         -o {output[2]} \
         -O {output[3]} 
         """
+ 
