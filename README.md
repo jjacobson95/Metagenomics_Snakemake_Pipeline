@@ -5,21 +5,20 @@ Metagenomics pipeline to find Relative Species Abundance.
 Development of pipeline in progress.  
   
 Completed steps:  
- 1) deinterleave with BBmap  
- 
- 2) fastp  
+ 1)‎ Deinterleave with BBmap  
+ 2) Quality Check and Trimming with fastp  
 
   
 Current step in progress:   
- 3) MetaSPAdes assembly  
+ 3) Assembly with MetaSPAdes
 
 Next steps:  
- 4) bwa index   
- 5) bwa alignment   
- 6) MaxBin   
- 7) MetaBat   
- 8) DAS_Tool   
- 9) GTDB-tk   
- 10) CheckM   
+ 4) Alignment with bwa index   
+ 5) Alignment with bwa alignment   
+ 6) Binning with MaxBin   
+ 7) Binning with MetaBat   
+ 8) Binning with DAS_Tool   
+ 9) Taxonomic Identification with GTDB-tk   
+ 10) Relative Species Abundance with CheckM   
 
   
