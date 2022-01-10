@@ -65,4 +65,91 @@ rule fastp:
         -o {output[2]} \
         -O {output[3]} 
         """
- 
+ #this step is in progress. Check slurm file upon return.
+rule MetaSPAdes:
+    "Run Metaspades Assembly"
+    input:
+        "OD_fastp/{sample}.out.R1.fq.gz",
+        "OD_fastp/{sample}.out.R2.fq.gz"
+    output:
+        "OD_assembled/{sample}_assembled/"
+    shell:
+        """
+       metaspades.py \
+        -o {output} \
+        -1 {input[0]} \
+        -2 {input[1]} \
+        -k 21,33,55,77,99,127 \
+        --threads 40
+        """
+
+#next steps
+
+# rule Maxbin:
+#     "Run Maxbin"
+#     input:
+#         "OD_assembled/{sample}_assembled/scaffolds.fasta",
+#         "OD_fastp/{sample}.out.R1.fq.gz",
+#         "OD_fastp/{sample}.out.R2.fq.gz"
+#     output:
+#         "OD_maxbin/{sample}/"
+#     shell:
+#         """
+#         run_MaxBin.pl \
+#         -contig {input[0]} \
+#         -reads {input[1]} \
+#         -reads2 {input[2]} \
+#         -out {output} \
+#         -thread 8
+#         """
+
+# rule bwa_index:
+#     "Run bwa indexer"
+#     input:
+#         "OD_assembled/{sample}_assembled/scaffolds.fasta"
+#     output:
+#         "OD_bwa_index/{sample}"
+#     shell:
+#         """
+#         bwa index {input} -p {output}
+#         """
+
+# rule bwa_alignment:
+#     "Run bwa alignment"
+#     input:
+#         "OD_assembled/{sample}_assembled/corrected/{sample}.out.R1.fq.00.0_0.cor.fastq",
+#         "OD_assembled/{sample}_assembled/corrected/{sample}.out.R2.fq.00.0_0.cor.fastq",
+#     output:
+#         "OD_aligned/{sample}_aligned.sam"
+#     shell:
+#         """
+#         bwa mem -t 40 \
+#         {sample} \
+#         {input[0]} \
+#         {input[1]} \
+#         > {output}
+#         """
+
+
+# rule Metabat:
+#     "Run Metabat"
+#     input:
+# 
+#     output:
+# 
+#     shell:
+#         """
+# 
+#         """
+
+
+
+
+
+
+
+
+
+
+
+
