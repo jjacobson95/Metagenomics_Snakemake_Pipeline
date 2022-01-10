@@ -8,15 +8,15 @@ Completed steps:
 2) fastp  
   
 Current step in progress:   
-3) Metaspades assembly  
+3) MetaSPAdes assembly  
 
 Next steps:  
 4) bwa index   
 5) bwa alignment   
-6) maxbin   
-7) metabat   
-8) das_tool   
-9) gtdb-tk   
-10) checkM   
+6) MaxBin   
+7) MetaBat   
+8) DAS_Tool   
+9) GTDB-tk   
+10) CheckM   
 
   
