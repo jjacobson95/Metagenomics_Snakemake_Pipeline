@@ -5,7 +5,7 @@ Metagenomics pipeline to find Relative Species Abundance.
 Development of pipeline in progress.  
   
 Completed steps:  
-1) deinterleave with BBmap 
+1) deinterleave with BBmap  
 2) fastp  
   
 Current step in progress:   
