@@ -6,10 +6,7 @@ Development of pipeline in progress.
   
 Completed steps:  
  1)‎ Deinterleave with BBmap  
- 2) Quality Check and Trimming with fastp  
-
-  
-Current step in progress:   
+ 2) Quality Check and Trimming with fastp   
  3) Assembly with MetaSPAdes
 
 Next steps:  
