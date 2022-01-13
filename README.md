@@ -16,6 +16,7 @@ Next steps:
  7) Binning with **MetaBat**   
  8) Binning with **DAS_Tool**   
  9) Taxonomic Identification with **GTDB-tk**   
+   * This step is computationally intense and requires a substantial amount of memory.
  10) Relative Species Abundance with **CheckM**   
 
   
