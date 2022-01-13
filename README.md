@@ -8,11 +8,11 @@ Completed steps:
  1)‎ Deinterleave with BBmap  
  2) Quality Check and Trimming with fastp   
  3) Assembly with MetaSPAdes
+ 4) Binning with MaxBin   
+ 5) Alignment with bwa index   
+ 6) Alignment with bwa alignment & conversion to bam format. 
 
 Next steps:  
- 4) Alignment with bwa index   
- 5) Alignment with bwa alignment   
- 6) Binning with MaxBin   
  7) Binning with MetaBat   
  8) Binning with DAS_Tool   
  9) Taxonomic Identification with GTDB-tk   
