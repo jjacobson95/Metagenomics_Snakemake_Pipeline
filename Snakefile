@@ -83,52 +83,54 @@ rule MetaSPAdes:
         --threads 40
         """
 
-#next steps
+#note for maxbin. installing this led to package changes. 
+rule Maxbin:
+    "Run Maxbin"
+    input:
+        "OD_assembled/{sample}_assembled/scaffolds.fasta",
+        "OD_fastp/{sample}.out.R1.fq.gz",
+        "OD_fastp/{sample}.out.R2.fq.gz"
+    output:
+        "OD_maxbin/{sample}_bins/"
+    shell:
+        """
+        run_MaxBin.pl \
+        -contig {input[0]} \
+        -reads {input[1]} \
+        -reads2 {input[2]} \
+        -out {output} \
+        -thread 8
+        """
 
-# rule Maxbin:
-#     "Run Maxbin"
-#     input:
-#         "OD_assembled/{sample}_assembled/scaffolds.fasta",
-#         "OD_fastp/{sample}.out.R1.fq.gz",
-#         "OD_fastp/{sample}.out.R2.fq.gz"
-#     output:
-#         "OD_maxbin/{sample}/"
-#     shell:
-#         """
-#         run_MaxBin.pl \
-#         -contig {input[0]} \
-#         -reads {input[1]} \
-#         -reads2 {input[2]} \
-#         -out {output} \
-#         -thread 8
-#         """
 
-# rule bwa_index:
-#     "Run bwa indexer"
-#     input:
-#         "OD_assembled/{sample}_assembled/scaffolds.fasta"
-#     output:
-#         "OD_bwa_index/{sample}"
-#     shell:
-#         """
-#         bwa index {input} -p {output}
-#         """
 
-# rule bwa_alignment:
-#     "Run bwa alignment"
-#     input:
-#         "OD_assembled/{sample}_assembled/corrected/{sample}.out.R1.fq.00.0_0.cor.fastq",
-#         "OD_assembled/{sample}_assembled/corrected/{sample}.out.R2.fq.00.0_0.cor.fastq",
-#     output:
-#         "OD_aligned/{sample}_aligned.sam"
-#     shell:
-#         """
-#         bwa mem -t 40 \
-#         {sample} \
-#         {input[0]} \
-#         {input[1]} \
-#         > {output}
-#         """
+rule bwa_index:
+    "Run bwa indexer"
+    input:
+        "OD_assembled/{sample}_assembled/scaffolds.fasta"
+    output:
+        "OD_bwa_index/{sample}"
+    shell:
+        """
+        bwa index -p {output} {input} 
+        """
+
+
+rule bwa_alignment:
+    "Run bwa alignment"
+    input:
+        "OD_assembled/{sample}_assembled/corrected/{sample}.out.R1.fq.00.0_0.cor.fastq.gz",
+        "OD_assembled/{sample}_assembled/corrected/{sample}.out.R2.fq.00.0_0.cor.fastq.gz",
+    output:
+        "OD_aligned/{sample}_aligned.bam"
+    shell:
+        """
+        bwa mem -t 20 \
+        OD_bwa_index/{wildcards.sample} \
+        {input[0]} \
+        {input[1]} \
+        | samtools view -S -b > {output}
+        """
 
 
 # rule Metabat:
