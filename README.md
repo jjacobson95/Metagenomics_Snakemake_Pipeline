@@ -11,12 +11,13 @@ Completed steps:
  4) Binning with **MaxBin**   
  5) Create **bwa index** files using 'bwa index'  
  6) Alignment with **bwa mem** & conversion to bam format using **samtools**. 
-
-Next steps:  
  7) Binning with **MetaBat**   
- 8) Binning with **DAS_Tool**   
- 9) Taxonomic Identification with **GTDB-tk**   
+ 8) Preparation for **DAS_Tool** with **Fasta_to_Scaffolds2Bin.sh**
+ 9) Binning with **DAS_Tool**   
+ 
+ Next Steps:
+ 10) Taxonomic Identification with **GTDB-tk**   
    * This step is computationally intense and requires a substantial amount of memory.
- 10) Relative Species Abundance with **CheckM**   
+ 11) Relative Species Abundance with **CheckM**   
 
   
