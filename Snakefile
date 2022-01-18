@@ -91,18 +91,19 @@ rule Maxbin:
         "OD_fastp/{sample}.out.R1.fq.gz",
         "OD_fastp/{sample}.out.R2.fq.gz"
     output:
-        "OD_maxbin/{sample}_bins/"
+        "OD_maxbin/{sample}_binned/",
+        "OD_maxbin/{sample}_log"
     shell:
         """
         run_MaxBin.pl \
         -contig {input[0]} \
         -reads {input[1]} \
         -reads2 {input[2]} \
-        -out {output} \
-        -thread 8
+        -out {output[0]} \
+        -thread 8 2> {output[1]}
+        mkdir OD_maxbin/{wildcards.sample}_bins
+        mv OD_maxbin/{wildcards.sample}_binned.0* OD_maxbin/{wildcards.sample}_bins/
         """
-
-
 
 rule bwa_index:
     "Run bwa indexer"
@@ -115,12 +116,11 @@ rule bwa_index:
         bwa index -p {output} {input} 
         """
 
-
 rule bwa_alignment:
     "Run bwa alignment"
     input:
         "OD_assembled/{sample}_assembled/corrected/{sample}.out.R1.fq.00.0_0.cor.fastq.gz",
-        "OD_assembled/{sample}_assembled/corrected/{sample}.out.R2.fq.00.0_0.cor.fastq.gz",
+        "OD_assembled/{sample}_assembled/corrected/{sample}.out.R2.fq.00.0_0.cor.fastq.gz"
     output:
         "OD_aligned/{sample}_aligned.bam"
     shell:
@@ -129,20 +129,63 @@ rule bwa_alignment:
         OD_bwa_index/{wildcards.sample} \
         {input[0]} \
         {input[1]} \
-        | samtools view -S -b > {output}
+        | samtools view -S -b | samtools sort > {output} 
+        """
+
+rule Metabat:
+    "Run Metabat"
+    input:
+        "OD_assembled/{sample}_assembled/scaffolds.fasta",
+        "OD_aligned/{sample}_aligned.bam"
+    output:
+        "OD_metabat/{sample}_log"
+    shell:
+        """
+        jgi_summarize_bam_contig_depths --outputDepth {wildcards.sample}_depth.txt {input[1]}
+        metabat2 -i {input[0]} -a {wildcards.sample}_depth.txt -o "OD_metabat/{wildcards.sample}" 2> {output}
+        mkdir OD_metabat/{wildcards.sample}_bins
+        mv OD_metabat/{wildcards.sample}.* OD_metabat/{wildcards.sample}_bins/
         """
 
 
-# rule Metabat:
-#     "Run Metabat"
-#     input:
-# 
-#     output:
-# 
-#     shell:
-#         """
-# 
-#         """
+rule fasta_scaffold2bin:
+    "Run Fasta_to_Scaffolds2Bin.sh - this is required for dastool input"
+    input:
+        "OD_maxbin/{sample}_bins/",
+        "OD_metabat/{sample}_bins/"
+    output:
+        "OD_scaffolds2bin/{sample}_maxbin.scaffolds2bin.tsv",
+        "OD_scaffolds2bin/{sample}_metabat.scaffolds2bin.tsv"
+    shell:
+        """
+        Fasta_to_Scaffolds2Bin.sh -i {input[0]} -e fasta > {output[0]}
+        Fasta_to_Scaffolds2Bin.sh -i {input[1]} -e fa > {output[1]}
+        """
+
+
+rule dastool:
+    "Run DAS_Tool"
+    input:
+        "OD_scaffolds2bin/{sample}_maxbin.scaffolds2bin.tsv",
+        "OD_scaffolds2bin/{sample}_metabat.scaffolds2bin.tsv",
+        "OD_assembled/{sample}_assembled/scaffolds.fasta"
+    output:
+        "OD_dastool/{sample}_log"
+    shell:
+        """
+        DAS_Tool -i {input[0]},{input[1]} \
+        -l maxbin,metabat \
+        -c {input[2]} \
+        -o OD_dastool/{wildcards.sample} \
+        -t 8 \
+        --search_engine diamond \
+        --write_bins 1 \
+        2> {output}
+        """
+
+
+
+
 
 
 
