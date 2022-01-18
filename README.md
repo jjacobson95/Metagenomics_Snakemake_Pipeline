@@ -12,7 +12,7 @@ Completed steps:
  5) Create **bwa index** files using 'bwa index'  
  6) Alignment with **bwa mem** & conversion to bam format using **samtools**  
  7) Binning with **MetaBat**   
- 8) Preparation for **DAS_Tool** with **Fasta_to_Scaffolds2Bin.sh**. 
+ 8) Preparation for **DAS_Tool** with **Fasta_to_Scaffolds2Bin.sh**  
  9) Binning with **DAS_Tool**   
    
  Next Steps:  
