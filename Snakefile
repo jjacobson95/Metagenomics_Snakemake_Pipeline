@@ -13,8 +13,14 @@ SAMPLES = ["ChrtobMetaP3_0mM_FD", "ChrtobMetaP5_0mM_FD", "ChrtobMetaP5_4mM_FD"]
 
 rule all:
     input:
-        "plots/quals.svg"
+        "data/"
+    output:
+         "OD_dastool/{wildcards.sample}_log"
 
+
+
+#load modules:
+#"module load bbmap"
 
 rule deinterleave:
     "Run BBmap reformat.sh "
@@ -182,6 +188,32 @@ rule dastool:
         --write_bins 1 \
         2> {output}
         """
+
+rule gtdbtk_database:
+    "Download gtdbtk database"
+    output:
+        "OD_gtdbtk/gtdbtk_database_download_log"
+    shell:
+        """
+        download-db.sh 2> {output}
+        """
+
+
+rule gtdbtk:
+    "Run gtdbtk"
+    input:
+        "OD_dastool/{sample}_DASTool_bins/"
+    output:
+        "OD_gtdbtk/{sample}_log"
+    shell:
+        """
+        gtdbtk classify_wf \
+        --genome_dir {input} \
+        --out_dir OD_gtdbtk/{wildcards.sample}/ \
+        --cpus 40 \
+        --extension fa 2> {output}
+        """
+
 
 
 
