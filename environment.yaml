@@ -18,3 +18,4 @@ dependencies:
   - metabat2 =2.15
   - das_tool = 1.1.3
   - gtdbtk = 1.7.0
+  - checkm-genome =1.1.3
