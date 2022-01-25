@@ -1,7 +1,7 @@
 # Metagenomics_Snakemake_Pipeline
-Metagenomics snakemake pipeline to find Relative Species Abundance. 
+Metagenomics pipeline to find Relative Species Abundance. 
    
-Pipeline Now Functional. See notes in Snakefile for more information.
+Pipeline Now Functional. 
   
  Steps:
  1)‎ Deinterleave with **BBmap**  
@@ -22,3 +22,4 @@ Pipeline Now Functional. See notes in Snakefile for more information.
 
   
 
+See notes in Snakefile for more information.
