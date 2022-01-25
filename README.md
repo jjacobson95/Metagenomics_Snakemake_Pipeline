@@ -17,7 +17,7 @@ Pipeline Now Functional.
  11) Download **GTDB-tk database** with **download-db.sh**. 
  12) Taxonomic Identification with **GTDB-tk**   
  13) Index bam file with **samtools** for **CheckM**. 
- 14) Run **checkm coverage** to create coverage tsv in **CheckM**. 
+ 14) Run **checkm coverage** to create coverage tsv in **CheckM**  
  15) Relative Species Abundance is found using **checkm profile** with **CheckM**   
 
   
