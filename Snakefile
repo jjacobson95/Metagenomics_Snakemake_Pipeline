@@ -1,29 +1,32 @@
 
-SAMPLES = ["ChrtobMetaP3_0mM_FD", "ChrtobMetaP5_0mM_FD", "ChrtobMetaP5_4mM_FD"]
-THREADS = 12
+#This Pipeline is meant to find relative species abundance.
 
-# rule all:
-#     input:
+#Current version with does not include filter out algal reads step.
+#this may be important for genomics classification.
+#pipeline may have to be run twice, once with algal reads and once without
+#in order to find relative species abundance as well as individual species types.
 
-#         OD_summary_fastp # this checks to make sure rule 1 output was successful before moving to rule 2
-        # OD_summary_metaspades, # and so on...
-        # OD_summary_bwa_alignment,
-        # OD_summary_gtdbtk,
-        # OD_summary_checkM
-       # expand("{sample}.R{read_no}.fq.gz.out", sample=SAMPLES, read_no=['1', '2'])
+#Helpful snakemake arguments if unstable cluster: --restart-times 10 --rerun-incomplete --keep-going
 
+# Currently sample names are hard-coded.
+# All samples should be in '.fastq.gz' format. The sample names without this suffix 
+# should be present in the directory titled 'data'. Nothing else should be in this directory.
 
-# OD_deinterleave          = OUT + "/01_deinterleave"
-# OD_summary_deinterleave  = OUT + "/02_summary_deinterleave"
-# OD_fastp                 = OUT + "/03_fastp"
-# OD_summary_fastp         = OUT + "/04_summary_fastp"
+SAMPLES = ["ChrtobMetaP3_0mM_FD", "ChrtobMetaP5_0mM_FD"]
 
+#Set threads based on availability.
+THREADS = 14
+
+#If using slurm / sbatch: gtdbtk requires extensive amounts of memory. Between 300-500GB is reccomended per sample.
+#Do not run this locally! OOM-kill at best.
+
+#Here are all of the expected outputs. 
 rule all:
     input:
         expand("OD_summary_deinterleave/{sample}_deinterleave_summary.txt", sample = SAMPLES),
         expand("OD_summary_fastp/{sample}_fastp_summary.txt", sample = SAMPLES),
         expand("OD_assembled/{sample}_assembled/corrected/{sample}.out.R2.fq.00.0_0.cor.fastq.gz", sample = SAMPLES),
-        expand("OD_maxbin/{sample}_log" ,sample = SAMPLES),
+        expand("OD_maxbin/{sample}_log" , sample = SAMPLES),
         expand("OD_bwa_index/{sample}.sa", sample = SAMPLES),
         expand("OD_aligned/{sample}_aligned.bam", sample = SAMPLES),
         expand("OD_metabat/{sample}_log", sample = SAMPLES),
@@ -31,15 +34,12 @@ rule all:
         expand("OD_dastool/{sample}_DASTool_summary.txt", sample = SAMPLES),
         "OD_gtdbtk/gtdbtk_database_download_log",
         expand("OD_gtdbtk/{sample}_log", sample = SAMPLES),
-        expand("OD_aligned/{sample}_index_log", sample = SAMPLES),
+        expand("OD_aligned/{sample}_aligned.bam.bai", sample = SAMPLES),
         expand("OD_checkm_coverage/{sample}_log", sample = SAMPLES),
         expand("OD_checkm_profile/{sample}_profile.txt", sample = SAMPLES)
 
 
-
-#load modules:
-#"module load bbmap"
-
+# Deinterleave fastq files.
 rule deinterleave:
     "Run BBmap reformat.sh"
     input:
@@ -50,6 +50,7 @@ rule deinterleave:
         "OD_summary_deinterleave/{sample}_deinterleave_summary.txt"
     shell:
         """
+        module load bbmap
         reformat.sh \
         in={input} \
         out1={output[0]} \
@@ -57,6 +58,7 @@ rule deinterleave:
         2>> {output[2]}
         """
 
+#Trim, cut adapters, quality filter.
 rule fastp:
     "Run fastp"
     input:
@@ -95,6 +97,7 @@ rule fastp:
         1>> {output[4]}
         """
 
+#Assembly of Genomes
 rule MetaSPAdes:
     "Run Metaspades Assembly"
     input:
@@ -115,7 +118,7 @@ rule MetaSPAdes:
         --threads {threads}
         """
 
-#note for maxbin. installing this led to package changes. 
+#Bin genomes
 rule maxbin:
     "Run Maxbin"
     input:
@@ -124,7 +127,7 @@ rule maxbin:
         "OD_fastp/{sample}.out.R2.fq.gz"
     output:
         "OD_maxbin/{sample}_log",
-        "OD_maxbin/{sample}_bins"
+        "OD_maxbin/{sample}_binned.log"
     threads: THREADS
     shell:
         """
@@ -132,15 +135,11 @@ rule maxbin:
         -contig {input[0]} \
         -reads {input[1]} \
         -reads2 {input[2]} \
-        -out OD_maxbin/{wildcards.sample}_binned/ \
-        -thread {threads} 2> {output}
-        sleep 10s
-        mkdir OD_maxbin/{wildcards.sample}_bins
-        sleep 10s
-        mv OD_maxbin/{wildcards.sample}_binned.0* OD_maxbin/{wildcards.sample}_bins/
-        sleep 5s
+        -out OD_maxbin/{wildcards.sample}_binned \
+        -thread {threads} 2> {output[0]}
         """
 
+#Make index for BWA alignment.
 rule bwa_index:
     "Run bwa indexer"
     input:
@@ -152,10 +151,11 @@ rule bwa_index:
         """
         bwa index -p OD_bwa_index/{wildcards.sample} {input} 
         """
-
+#BWA Alignment step. This is required for metabat.
 rule bwa_alignment:
     "Run bwa alignment"
     input:
+        "OD_bwa_index/{sample}.sa",
         "OD_assembled/{sample}_assembled/corrected/{sample}.out.R1.fq.00.0_0.cor.fastq.gz",
         "OD_assembled/{sample}_assembled/corrected/{sample}.out.R2.fq.00.0_0.cor.fastq.gz"
     output:
@@ -165,11 +165,11 @@ rule bwa_alignment:
         """
         bwa mem -t {threads} \
         OD_bwa_index/{wildcards.sample} \
-        {input[0]} \
         {input[1]} \
+        {input[2]} \
         | samtools view -S -b | samtools sort > {output} 
         """
-
+#This is another binning tool.
 rule Metabat:
     "Run Metabat"
     input:
@@ -177,17 +177,34 @@ rule Metabat:
         "OD_aligned/{sample}_aligned.bam"
     output:
         "OD_metabat/{sample}_log",
-        "OD_metabat/{sample}_bins"
-    threads: THREADS
+        "{sample}_depth.txt"
+    threads: 12
     shell:
         """
-        jgi_summarize_bam_contig_depths --outputDepth {wildcards.sample}_depth.txt {input[1]}
-        metabat2 -t={threads} -i {input[0]} -a {wildcards.sample}_depth.txt -o "OD_metabat/{wildcards.sample}" 2> {output}
+        jgi_summarize_bam_contig_depths --outputDepth {output[1]} {input[1]}
+        metabat2 -t {threads} -i {input[0]} -a {output[1]} -o OD_metabat/{wildcards.sample} 2> {output[0]}
+        """
+#Restructure database to more easily perform next step.
+rule restructure_bins:
+    "Restructure bins"
+    input:
+         "OD_maxbin/{sample}_log",
+         "OD_metabat/{sample}_log",
+         "{sample}_depth.txt"
+    output:
+        directory("OD_maxbin/{sample}_bins/"),
+        directory("OD_metabat/{sample}_bins/")
+    threads: 1
+    shell:
+        """
         mkdir OD_metabat/{wildcards.sample}_bins
         mv OD_metabat/{wildcards.sample}.* OD_metabat/{wildcards.sample}_bins/
+        mkdir OD_maxbin/{wildcards.sample}_bins
+        mv OD_maxbin/{wildcards.sample}_binned.0* OD_maxbin/{wildcards.sample}_bins/
+        mv {wildcards.sample}_depth.txt ./OD_metabat/
         """
 
-
+#Prepare for dastool.
 rule fasta_scaffold2bin:
     "Run Fasta_to_Scaffolds2Bin.sh - this is required for dastool input"
     input:
@@ -203,7 +220,7 @@ rule fasta_scaffold2bin:
         Fasta_to_Scaffolds2Bin.sh -i {input[1]} -e fa > {output[1]}
         """
 
-
+#Dastool takes the previously found bins from maxbin and metabat, and chooses the best / dereplicates them.
 rule dastool:
     "Run DAS_Tool"
     input:
@@ -213,7 +230,7 @@ rule dastool:
     output:
         "OD_dastool/{sample}_log",
         "OD_dastool/{sample}_DASTool_summary.txt",
-        "OD_dastool/{sample}_DASTool_bins"
+        directory("OD_dastool/{sample}_DASTool_bins/")
     threads: THREADS
     shell:
         """
@@ -226,6 +243,10 @@ rule dastool:
         --write_bins 1 2> {output[0]}
         """
 
+#database installation for gtdbtk
+#this rule will fail if database is already installed. 
+#Comment this out if database is already installed. Also comment out its input in Rule ALL.
+#database is large. 50 or more GB.
 rule gtdbtk_database:
     "Download gtdbtk database"
     output:
@@ -236,59 +257,51 @@ rule gtdbtk_database:
         download-db.sh 2> {output}
         """
 
-
-#--restart-times 30 --rerun-incomplete --keep-going
-
-
+#highly memory intensive, most common reason for oom-kill.
+#This classifies genomes based on the bins. Should determine what each species is.
 rule gtdbtk:
     "Run gtdbtk"
     input:
-        "OD_dastool/{sample}_DASTool_bins/"
+        "OD_dastool/{sample}_DASTool_bins/",
+        "OD_gtdbtk/gtdbtk_database_download_log"
     output:
         "OD_gtdbtk/{sample}_log"
     threads: THREADS
     shell:
         """
         gtdbtk classify_wf \
-        --genome_dir {input} \
+        --genome_dir {input[0]} \
         --out_dir OD_gtdbtk/{wildcards.sample}/ \
         --cpus {threads} \
         --extension fa 2> {output}
         """
 
-
+#required for checkm
 rule index_bam:
     "Run index bam file before checkM"
     input:
         "OD_aligned/{sample}_aligned.bam"
     output:
+        "OD_aligned/{sample}_aligned.bam.bai",
         "OD_aligned/{sample}_index_log"
-    threads: THREADS
+    threads: 4
     shell:
         """
-        samtools index {input} {input}.bai 2> {output}
+        samtools index {input} {output[0]} 2> {output[1]}
         """
 
 
-# rule checkm_reference_data:
-#     output:
-#         "OD_checkm_reference_data/checkm_database_download_log"
-#     threads: THREADS
-#     shell:
-#         """
-#         wget https://data.ace.uq.edu.au/public/CheckM_databases/checkm_data_2015_01_16.tar.gz 2> {output}
-#         mv checkm_data_2015_01_16.tar.gz OD_checkm_reference_data/
-#         tar -xf OD_checkm_reference_data/checkm_data_2015_01_16.tar.gz
-#         checkm data setRoot OD_checkm_reference_data
-#         """
-
 #mamba install -c bioconda/label/cf201901 checkm-genome
+#This checkm install command will also install reference data / set root for checkm.
+#other checkm installations may not include reference data.
 
+#Checkm coverage is needed to run checkm profile
 rule checkm_coverage:
     "Run checkm coverage"
     input:
         "OD_dastool/{sample}_DASTool_bins/",
-        "OD_aligned/{sample}_aligned.bam"
+        "OD_aligned/{sample}_aligned.bam",
+        "OD_aligned/{sample}_aligned.bam.bai"
     output:
         "OD_checkm_coverage/{sample}_log",
         "OD_checkm_coverage/{sample}_checkm_cov_out.tsv"
@@ -304,7 +317,10 @@ rule checkm_coverage:
         2> {output[0]}
         """
 
-
+#Checkm profile determines the relative species abundance
+#Current version of this package includes a bug:
+#To fix bug, in checkm 'profile.py' file:
+#change "import checkm.prettytable" to "import checkm.prettytable as prettytable"
 rule checkm_profile:
     "Run checkm profile"
     input:
@@ -318,25 +334,3 @@ rule checkm_profile:
         -f {output} \
         {input}
         """
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
