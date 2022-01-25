@@ -2,9 +2,8 @@
 Metagenomics snakemake pipeline to find Relative Species Abundance. 
  * The goal of this pipeline is to join all the following steps into one cohesive python script.
    
-Development of pipeline in progress.  
+Pipeline Now Functional.
   
-Completed steps:  
  1)‎ Deinterleave with **BBmap**  
  2) Quality Check and Trimming with **fastp**   
  3) Assembly with **MetaSPAdes**  
@@ -12,12 +11,13 @@ Completed steps:
  5) Create **bwa index** files using 'bwa index'  
  6) Alignment with **bwa mem** & conversion to bam format using **samtools**  
  7) Binning with **MetaBat**   
- 8) Preparation for **DAS_Tool** with **Fasta_to_Scaffolds2Bin.sh**  
- 9) Binning with **DAS_Tool**   
-   
- Next Steps:  
- 10) Taxonomic Identification with **GTDB-tk**   
-   * This step is computationally intense and requires a substantial amount of memory.
- 11) Relative Species Abundance with **CheckM**   
+ 8) Restructure File system
+ 9) Preparation for **DAS_Tool** with **Fasta_to_Scaffolds2Bin.sh**  
+ 10) Binning with **DAS_Tool**   
+ 11) Download **GTDB-tk database** with **download-db.sh**
+ 12) Taxonomic Identification with **GTDB-tk**   
+ 13) Index bam file with **samtools** for **CheckM**
+ 14) Run **checkm coverage** to create coverage tsv in **CheckM**
+ 15) Relative Species Abundance is found using **checkm profile** with **CheckM**   
 
   
