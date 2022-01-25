@@ -3,7 +3,7 @@ Metagenomics pipeline to find Relative Species Abundance.
    
 Pipeline Now Functional. 
   
- Steps:
+ Steps:  
  1)‎ Deinterleave with **BBmap**  
  2) Quality Check and Trimming with **fastp**   
  3) Assembly with **MetaSPAdes**  
