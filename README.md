@@ -1,9 +1,9 @@
 # Metagenomics_Snakemake_Pipeline
 Metagenomics snakemake pipeline to find Relative Species Abundance. 
- * The goal of this pipeline is to join all the following steps into one cohesive python script.
    
-Pipeline Now Functional.
+Pipeline Now Functional. See notes in Snakefile for more information.
   
+ Steps:
  1)‎ Deinterleave with **BBmap**  
  2) Quality Check and Trimming with **fastp**   
  3) Assembly with **MetaSPAdes**  
@@ -21,3 +21,4 @@ Pipeline Now Functional.
  15) Relative Species Abundance is found using **checkm profile** with **CheckM**   
 
   
+
