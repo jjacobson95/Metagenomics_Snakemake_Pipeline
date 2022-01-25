@@ -14,9 +14,9 @@ Pipeline Now Functional.
  8) Restructure File system 
  9) Preparation for **DAS_Tool** with **Fasta_to_Scaffolds2Bin.sh**  
  10) Binning with **DAS_Tool**   
- 11) Download **GTDB-tk database** with **download-db.sh**. 
+ 11) Download **GTDB-tk database** with **download-db.sh**  
  12) Taxonomic Identification with **GTDB-tk**   
- 13) Index bam file with **samtools** for **CheckM**. 
+ 13) Index bam file with **samtools** for **CheckM**    
  14) Run **checkm coverage** to create coverage tsv in **CheckM**  
  15) Relative Species Abundance is found using **checkm profile** with **CheckM**   
 
